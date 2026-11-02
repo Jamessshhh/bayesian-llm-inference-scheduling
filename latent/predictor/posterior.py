@@ -20,11 +20,13 @@ def fit_log_prior(history: List[Request]) -> LogNormalPrior:
     return LogNormalPrior(float(logs.mean()), float(logs.std()))
 
 
-def posterior_log_params(r: Request, prior: LogNormalPrior):
+def posterior_log_params(r: Request, prior: LogNormalPrior, sigma=None):
     """Noisy prediction model: log(pred) = log(true) + N(0, sigma^2).
     Large sigma -> posterior pulled toward the prior.
+    `sigma` overrides the request's reported sigma (used by recalibration).
     Returns (posterior mean of log cost, posterior std of log cost)."""
-    sig2 = (r.pred_sigma or 0.0) ** 2
+    sg = r.pred_sigma if sigma is None else sigma
+    sig2 = (sg or 0.0) ** 2
     s2 = prior.s ** 2
     lp = math.log(r.predicted_service)
     w = s2 / (s2 + sig2)                      # trust placed in the prediction
