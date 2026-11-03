@@ -84,3 +84,12 @@ def test_recalibrator_corrects_underconfident_predictor():
     _obs(rec, 2000, true_sigma=0.2, reported=0.8)
     r = Request(0, 0.0, 1.0, predicted_service=1.0, pred_sigma=0.8)
     assert rec.sigma(r) == pytest.approx(0.2, rel=0.15)
+
+
+
+
+def test_posterior_without_prior_uses_prediction_directly():
+    r = make(1, 0.0, 5.0, pred=5.0, sigma=0.7)
+    mu, sd = posterior_log_params(r, None)
+    assert mu == pytest.approx(math.log(5.0))
+    assert sd == pytest.approx(0.7)

@@ -24,8 +24,12 @@ def posterior_log_params(r: Request, prior: LogNormalPrior, sigma=None):
     """Noisy prediction model: log(pred) = log(true) + N(0, sigma^2).
     Large sigma -> posterior pulled toward the prior.
     `sigma` overrides the request's reported sigma (used by recalibration).
+    prior=None -> no extra shrinkage: use for a LEARNED predictor, whose output
+    already is the conditional distribution of log(true) given the prompt.
     Returns (posterior mean of log cost, posterior std of log cost)."""
     sg = r.pred_sigma if sigma is None else sigma
+    if prior is None:
+        return math.log(r.predicted_service), float(sg or 0.0)
     sig2 = (sg or 0.0) ** 2
     s2 = prior.s ** 2
     lp = math.log(r.predicted_service)
