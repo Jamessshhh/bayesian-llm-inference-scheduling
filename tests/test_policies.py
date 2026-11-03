@@ -93,3 +93,26 @@ def test_posterior_without_prior_uses_prediction_directly():
     mu, sd = posterior_log_params(r, None)
     assert mu == pytest.approx(math.log(5.0))
     assert sd == pytest.approx(0.7)
+
+
+
+# ---- TIE re-implementation ----
+from latent.policies.tie import TIE
+
+
+def test_tie_penalizes_uncertain_request_with_same_median():
+    sure = make(1, 0.0, 5.0, pred=5.0, sigma=0.2)
+    shaky = make(2, 0.0, 5.0, pred=5.0, sigma=1.2)
+    assert TIE(x_max=1e9, beta=0.0).select([shaky, sure], now=0.0).id == 1
+
+
+def test_tie_with_equal_sigma_ranks_like_point_sjf():
+    a = make(1, 0.0, 9.0, pred=2.0, sigma=0.6)
+    b = make(2, 0.0, 1.0, pred=4.0, sigma=0.6)
+    assert TIE(x_max=1e9, beta=0.3).select([b, a], now=0.0).id == 1
+
+
+def test_tie_censoring_caps_the_score():
+    r = make(1, 0.0, 5.0, pred=5.0, sigma=3.0)
+    e, cvar = TIE(x_max=10.0)._stats(r)
+    assert e <= 10.0 and cvar <= 10.0
