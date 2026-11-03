@@ -2,7 +2,7 @@
 
 **Question:** When an LLM server can only *predict* how long each request will take, and the predictions are noisy, how should it schedule? Does modeling prediction uncertainty beat trusting a single point estimate?
 
-> **Status:** a controlled simulation study. Not a production system, and the related-work review is not yet complete, so no novelty claim is made. See [Limitations](#limitations).
+> **Status:** a controlled simulation study, not a production system, and **not a new method**: uncertainty-aware SJF scheduling already exists (see [Related work](#related-work), especially TIE). This repo re-examines it in a controlled single-server simulator with real ShareGPT lengths.
 
 ## TL;DR
 
@@ -70,6 +70,10 @@ With a calibrated predictor, LATENT improves on point-SJF by 3-4% on mean and 4-
 - Ranking by a risk-averse quantile did not beat ranking by the posterior mean.
 - Online recalibration did not help when the predictor was already calibrated.
 - Aging trades tail for mean. No policy tested beats FIFO on p99 on the real workload.
+
+## Related work
+
+The closest prior work is **TIE** (Zheng et al., arXiv 2604.00499), which predicts a per-prompt output-length distribution and schedules by expected length plus a CVaR tail term, with starvation prevention, in vLLM. Related: Chen et al. 2025 (interval predictions, arXiv 2508.14544), MAPS (conformal length bounds), and the Mitzenmacher & Shahout survey. Details and verification levels are in [`docs/related_work.md`](docs/related_work.md). This repo does not claim a new scheduling principle; its contribution is a reproducible controlled study.
 
 ## Limitations
 
